@@ -112,7 +112,7 @@ class App extends React.Component {
   }
 
   componentWillMount() {
-    let {player} = this.state;
+    let { player } = this.state;
     let playerPosition = this.randomPosition();
     player.position.row = playerPosition.row;
     player.position.col = playerPosition.col;
