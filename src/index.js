@@ -2,45 +2,6 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
 
-class Cell extends React.Component {
-  render() {
-    return (
-      <div className = {this.props.cellClass}>
-        {this.props.playerCell === true && <div className = "player"></div>}
-
-      </div>
-    );
-  }
-}
-
-class Map extends React.Component {
-  render() {
-    let { grid, player } = this.props;
-    const gameMap = grid.map((rowsArr, row) => {
-      return (
-        rowsArr.map((cell, col) => {
-          const cellId = `${row}|${col}`;
-          return (
-            <Cell
-              key = {cellId}
-              id = {cellId}
-              cellClass = {(grid[row][col] === 1) ? 'cell walkable' : 'cell unwalkable'}
-              playerCell = {(player.position.row === row && player.position.col === col) ? true : false }
-              row = {row}
-              col = {col}
-            />
-          );
-        })
-      )
-    })
-    return (
-      <div className = "map">
-        {gameMap}
-      </div>
-    );
-  }
-}
-
 class App extends React.Component {
   constructor(props) {
     super(props);
@@ -73,16 +34,25 @@ class App extends React.Component {
       case 39:
       case 68:
         //right D
+        console.log(player.position);
+        player.position.col++;
+        console.log(player.position);
         break;
 
       case 40:
       case 83:
         //down S
+        console.log(player.position);
+        player.position.row++;
+        console.log(player.position);
         break;
 
       case 37:
       case 65:
         //left A
+        console.log(player.position);
+        player.position.col--;
+        console.log(player.position);
         break;
 
       default:
@@ -130,6 +100,46 @@ class App extends React.Component {
     );
   }
 }
+
+class Map extends React.Component {
+  render() {
+    let { grid, player } = this.props;
+    const gameMap = grid.map((rowsArr, row) => {
+      return (
+        rowsArr.map((cell, col) => {
+          const cellId = `${row}|${col}`;
+          return (
+            <Cell
+              key = {cellId}
+              id = {cellId}
+              cellClass = {(grid[row][col] === 1) ? 'cell walkable' : 'cell unwalkable'}
+              playerCell = {(player.position.row === row && player.position.col === col) ? true : false }
+              row = {row}
+              col = {col}
+            />
+          );
+        })
+      )
+    })
+    return (
+      <div className = "map">
+        {gameMap}
+      </div>
+    );
+  }
+}
+
+class Cell extends React.Component {
+  render() {
+    return (
+      <div className = {this.props.cellClass}>
+        {this.props.playerCell === true && <div className = "player"></div>}
+
+      </div>
+    );
+  }
+}
+
 
 ReactDOM.render(<App />, document.getElementById('root'));
 
@@ -189,6 +199,6 @@ function createMap() { //Random Walker Algorithm
   return map;
 }
 
-function cloneArray(arr) {
-  return JSON.parse(JSON.stringify(arr));
-}
+// function cloneArray(arr) {
+//   return JSON.parse(JSON.stringify(arr));
+// }
