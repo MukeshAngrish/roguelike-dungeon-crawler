@@ -7,91 +7,30 @@ class App extends React.Component {
     super(props);
     this.state = {
       grid : createMap(),
-      gameMap : [],
       player : {
         position : {
-          row : 0,
-          col : 0,
-        },
+          row : Math.floor(Math.random() * 40),
+          col : Math.floor(Math.random() * 40),
+        }
       },
     }
-    //binding methods
-    this.handleKeyPress = this.handleKeyPress.bind(this);
-    this.randomPosition = this.randomPosition.bind(this);
+    // binding methods
+    this.reset = this.reset.bind(this);
   }
 
-  handleKeyPress(event) {
-    let {player} = this.state;
-    switch (event.keyCode) {
-      case 38:
-      case 87:
-        //up W
-        console.log(player.position);
-        player.position.row--;
-        console.log(player.position);
-        break;
-
-      case 39:
-      case 68:
-        //right D
-        console.log(player.position);
-        player.position.col++;
-        console.log(player.position);
-        break;
-
-      case 40:
-      case 83:
-        //down S
-        console.log(player.position);
-        player.position.row++;
-        console.log(player.position);
-        break;
-
-      case 37:
-      case 65:
-        //left A
-        console.log(player.position);
-        player.position.col--;
-        console.log(player.position);
-        break;
-
-      default:
-        console.log('default');
-    }
-  }
-
-  randomPosition(item) {
-    let row, col;
-    let { grid } = this.state;
-    do {
-      row = Math.floor(Math.random() * 40);
-      col = Math.floor(Math.random() * 40);
-    } while(
-        grid[row][col] === 0
-      /*&& (
-        (grid[row - 1][col] === 0 && grid[row - 1][col + 1] === 0 && grid[row][col + 1] === 0) ||
-        (grid[row][col + 1] === 0 && grid[row + 1][col + 1] === 0 && grid[row + 1][col] === 0) ||
-        (grid[row + 1][col] === 0 && grid[row + 1][col - 1] === 0 && grid[row][col - 1] === 0) ||
-        (grid[row][col - 1] === 0 && grid[row - 1][col - 1] === 0 && grid[row - 1][col] === 0)
-      )*/
-    )
-    return {
-      row,
-      col,
-    }
+  reset() {
+    const state = this.initiateState();
+    this.setState(state);
   }
 
   componentWillMount() {
-    let { player } = this.state;
-    let playerPosition = this.randomPosition();
-    player.position.row = playerPosition.row;
-    player.position.col = playerPosition.col;
-    this.setState({player});
+    this.setState(getState());
   }
 
   render() {
+    console.log(this.state.grid);
     return (
-      <div className = "roguelike" onKeyPress = {this.handleKeyPress}>
+      <div className = "roguelike">
         <Map
           grid = {this.state.grid}
           player = {this.state.player}
@@ -112,7 +51,7 @@ class Map extends React.Component {
             <Cell
               key = {cellId}
               id = {cellId}
-              cellClass = {(grid[row][col] === 1) ? 'cell walkable' : 'cell unwalkable'}
+              cellClass = {(grid[row][col] === 0) ? 'cell unwalkable' : 'cell walkable'}
               playerCell = {(player.position.row === row && player.position.col === col) ? true : false }
               row = {row}
               col = {col}
@@ -134,12 +73,10 @@ class Cell extends React.Component {
     return (
       <div className = {this.props.cellClass}>
         {this.props.playerCell === true && <div className = "player"></div>}
-
       </div>
     );
   }
 }
-
 
 ReactDOM.render(<App />, document.getElementById('root'));
 
@@ -199,6 +136,131 @@ function createMap() { //Random Walker Algorithm
   return map;
 }
 
+function randomPosition(grid) {
+  let row, col, val;
+  do {
+    row = Math.floor(Math.random() * 40);
+    col = Math.floor(Math.random() * 40);
+    val = grid[row][col]
+  } while(val === 0 ||
+          val === 2 ||
+          val === 3 ||
+          val === 4 ||
+          val === 5)
+  return {
+    row,
+    col,
+  }
+}
+
+function initialState() {
+  let grid = createMap();
+  let position = randomPosition(grid);
+  const state = {
+    grid,
+    player : {
+      position,
+      level : 1,
+      xp : 0,
+      health : 100,
+      weapon : 0,
+    },
+    message : {
+      text : 'Use the arrow keys or WASD to move the player',
+      type : 'inform',
+    },
+    villains : [],
+    theBoss : 1000,
+    gameStatus : 3,
+    lights : 'off',
+  };
+  state.grid[position.row][position.col] = 2;
+  return state;
+}
+
+function placeVillains(state) {
+  let villainCount = 0,
+    health = 50,
+    level = 1,
+    position;
+  state.villains = [];
+  while(villainCount < 20) {
+    position = randomPosition(state.grid);
+    state.villains.push({
+      position,
+      health,
+      level,
+    });
+    state.grid[position.row][position.col] = 3;
+    health += 50;
+    level++;
+    villainCount++;
+  }
+  return state;
+}
+
+function placeHealth(state) {
+  let healthCount = 0,
+    position;
+  while(healthCount < 30) {
+    position = randomPosition(state.grid);
+    state.grid[position.row][position.col] = 4;
+    healthCount++;
+  }
+  return state;
+}
+
+function placeWeapons(state) {
+  let weaponCount = 0,
+    position;
+  while(weaponCount < 5) {
+    position = randomPosition(state.grid);
+    state.grid[position.row][position.col] = 5;
+    weaponCount++;
+  }
+  return state;
+}
+
+function getState() {
+  const state1 = initialState();
+	const state2 = placeVillains(state1);
+	const state3 = placeHealth(state2);
+	const state4 = placeWeapons(state3);
+	return state4;
+}
+
 // function cloneArray(arr) {
 //   return JSON.parse(JSON.stringify(arr));
+// }
+//
+// function handleKeyPress(event) {
+//   let {player} = this.state;
+//   switch (event.keyCode) {
+//     case 38:
+//     case 87:
+//       //up W
+//       player.position.row--;
+//       break;
+//
+//     case 39:
+//     case 68:
+//       //right D
+//       player.position.col++;
+//       break;
+//
+//     case 40:
+//     case 83:
+//       //down S
+//       player.position.row++;
+//       break;
+//
+//     case 37:
+//     case 65:
+//       //left A
+//       player.position.col--;
+//       break;
+//
+//     default:
+//       console.log('default');
+//   }
 // }
