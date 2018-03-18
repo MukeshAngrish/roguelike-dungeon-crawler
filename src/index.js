@@ -7,12 +7,6 @@ class App extends React.Component {
     super(props);
     this.state = {
       grid : createMap(),
-      player : {
-        position : {
-          row : Math.floor(Math.random() * 40),
-          col : Math.floor(Math.random() * 40),
-        }
-      },
     }
     // binding methods
     this.reset = this.reset.bind(this);
@@ -42,17 +36,18 @@ class App extends React.Component {
 
 class Map extends React.Component {
   render() {
-    let { grid, player } = this.props;
+    let { grid } = this.props;
     const gameMap = grid.map((rowsArr, row) => {
       return (
         rowsArr.map((cell, col) => {
           const cellId = `${row}|${col}`;
+					const val = grid[row][col];
           return (
             <Cell
               key = {cellId}
               id = {cellId}
-              cellClass = {(grid[row][col] === 0) ? 'cell unwalkable' : 'cell walkable'}
-              playerCell = {(player.position.row === row && player.position.col === col) ? true : false }
+              cellClass = {(val === 0) ? 'cell unwalkable' : 'cell walkable'}
+     					val = { val }
               row = {row}
               col = {col}
             />
@@ -72,7 +67,10 @@ class Cell extends React.Component {
   render() {
     return (
       <div className = {this.props.cellClass}>
-        {this.props.playerCell === true && <div className = "player"></div>}
+        {this.props.val === 2 && <div className = "player"></div>}
+				{this.props.val === 3 && <div className = "villain"></div>}
+				{this.props.val === 4 && <div className = "health"></div>}
+				{this.props.val === 5 && <div className = "weapon"></div>}
       </div>
     );
   }
