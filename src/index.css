@@ -27,3 +27,27 @@
   background : purple;
   margin : auto;
 }
+
+.villain {
+  width : 7px;
+  height : 7px;
+  border-radius : 50%;
+  background : brown;
+  margin : auto;
+}
+
+.health {
+  width : 7px;
+  height : 7px;
+  border-radius : 50%;
+  background : blue;
+  margin : auto;
+}
+
+.weapon {
+  width : 7px;
+  height : 7px;
+  border-radius : 50%;
+  background : black;
+  margin : auto;
+}
