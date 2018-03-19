@@ -3,14 +3,15 @@ import ReactDOM from 'react-dom';
 import './index.css';
 
 class App extends React.Component {
-  constructor(props) {
-    super(props);
+  constructor() {
+    super();
     this.state = getState();
     // binding methods
     this.reset = this.reset.bind(this);
     this.playerMove = this.playerMove.bind(this);
+    this.fightVillains = this.fightVillains.bind(this);
     this.pickHealth = this.pickHealth.bind(this);
-    // this.pickWeapon = this.pickWeapon.bind(this);
+    this.pickWeapon = this.pickWeapon.bind(this);
     this.handleKeyPress = this.handleKeyPress.bind(this);
   }
 
@@ -53,8 +54,8 @@ class App extends React.Component {
 
       case 3:
         // fight villain
-        console.log('fight the villains');
-
+        console.log('fight the villain');
+        // this.fightVillains()
         break;
 
       case 4: // random health
@@ -76,11 +77,16 @@ class App extends React.Component {
     console.log(this.state.message);
   }
 
+  fightVillains() {
+    //
+  }
+
   pickHealth(player, grid, position) {
+    let healths = [20, 40, 60, 80, 100, 120];
     grid[player.position.row][player.position.col] = 1;
     grid[position.row][position.col] = 2;
     player.position = position;
-    player.health += Math.floor((Math.random() * (120-20)) + 20);
+    player.health += healths[Math.floor(Math.random() * healths.length)];
     this.setState({
       player,
       grid,
@@ -129,6 +135,13 @@ class App extends React.Component {
         this.playerMove([0, -1]);
         break;
 
+      case 82: // R
+        this.reset();
+        break;
+
+      // case 84: // T
+      //   //toggleLights
+      //   break;
       default:
         console.log('default');
     }
@@ -327,7 +340,7 @@ function placeHealth(state) {
 function placeWeapons(state) {
   let weaponCount = 0,
     position;
-  while(weaponCount < 5) {
+  while(weaponCount < 10) {
     position = randomPosition(state.grid);
     state.grid[position.row][position.col] = 5;
     weaponCount++;
