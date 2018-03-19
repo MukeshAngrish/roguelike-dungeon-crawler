@@ -20,34 +20,35 @@
   background: gray;
 }
 
-.player {
-  width : 7px;
-  height : 7px;
-  border-radius : 50%;
-  background : purple;
-  margin : auto;
-}
-
-.villain {
-  width : 7px;
-  height : 7px;
-  border-radius : 50%;
-  background : brown;
-  margin : auto;
-}
-
 .health {
-  width : 7px;
-  height : 7px;
+  width : 10px;
+  height : 10px;
   border-radius : 50%;
   background : blue;
   margin : auto;
 }
 
 .weapon {
-  width : 7px;
-  height : 7px;
+  width : 10px;
+  height : 10px;
   border-radius : 50%;
   background : black;
+  margin : auto;
+}
+
+.villain {
+  width : 10px;
+  height : 10px;
+  border-radius : 50%;
+  background : brown;
+  margin : auto;
+}
+
+.player {
+  width : 8px;
+  height : 8px;
+  border-radius : 50%;
+  border : 2px solid white;
+  background : purple;
   margin : auto;
 }

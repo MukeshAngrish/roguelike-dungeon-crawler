@@ -5,24 +5,96 @@ import './index.css';
 class App extends React.Component {
   constructor(props) {
     super(props);
-    this.state = {
-      grid : createMap(),
-    }
+    this.state = getState();
     // binding methods
     this.reset = this.reset.bind(this);
+    this.playerMove = this.playerMove.bind(this);
+    this.handleKeyPress = this.handleKeyPress.bind(this);
   }
 
   reset() {
-    const state = this.initiateState();
+    const state = getState();
     this.setState(state);
   }
 
-  componentWillMount() {
-    this.setState(getState());
+  playerMove(direction) {
+    let { player, grid } = this.state;
+    let position = {
+      row : player.position.row + direction[0],
+      col : player.position.col + direction[1],
+    }
+    if(!((position.row >= 0 && position.row < 40) &&
+         (position.col >= 0 && position.col < 40))) return;
+    let gridVal = grid[position.row][position.col];
+    switch (gridVal) {
+      case 1: //moving in the lightblue(walkable) area
+        grid[player.position.row][player.position.col] = 1;
+        grid[position.row][position.col] = 2;
+        player.position = position;
+        this.setState({ player, grid });
+        break;
+
+      case 3:
+        // fight villain
+        break;
+
+      case 4: // random health
+        grid[player.position.row][player.position.col] = 1;
+        grid[position.row][position.col] = 2;
+        player.position = position;
+        player.health += Math.floor((Math.random() * (120-20)) + 20);
+        this.setState({ player, grid });
+        break;
+
+      case 5: // random weapon
+        grid[player.position.row][player.position.col] = 1;
+        grid[position.row][position.col] = 2;
+        player.position = position;
+        player.weapon = Math.floor(Math.random() * 5);
+        this.setState({ player, grid });
+        break;
+
+      default:
+        console.log('wtf?!')
+    }
+  }
+
+  handleKeyPress(event) {
+    switch (event.keyCode) {
+      case 38:
+      case 87:
+        //up W
+        this.playerMove([-1, 0]);
+        break;
+
+      case 39:
+      case 68:
+        //right D
+        this.playerMove([0, 1]);
+        break;
+
+      case 40:
+      case 83:
+        //down S
+        this.playerMove([1, 0]);
+        break;
+
+      case 37:
+      case 65:
+        //left A
+        this.playerMove([0, -1]);
+        break;
+
+      default:
+        console.log('default');
+    }
+  }
+
+  componentDidMount() {
+    window.addEventListener('keydown', this.handleKeyPress);
   }
 
   render() {
-    console.log(this.state.grid);
     return (
       <div className = "roguelike">
         <Map
@@ -79,10 +151,10 @@ class Cell extends React.Component {
 ReactDOM.render(<App />, document.getElementById('root'));
 
 function createArray(num, dimensions) {
-  var array = [];
-  for(var i = 0; i < dimensions; i++) {
+  let array = [];
+  for(let i = 0; i < dimensions; i++) {
     array.push([]);
-    for(var j = 0; j < dimensions; j++) {
+    for(let j = 0; j < dimensions; j++) {
       array[i].push(num);
     }
   }
@@ -226,39 +298,3 @@ function getState() {
 	const state4 = placeWeapons(state3);
 	return state4;
 }
-
-// function cloneArray(arr) {
-//   return JSON.parse(JSON.stringify(arr));
-// }
-//
-// function handleKeyPress(event) {
-//   let {player} = this.state;
-//   switch (event.keyCode) {
-//     case 38:
-//     case 87:
-//       //up W
-//       player.position.row--;
-//       break;
-//
-//     case 39:
-//     case 68:
-//       //right D
-//       player.position.col++;
-//       break;
-//
-//     case 40:
-//     case 83:
-//       //down S
-//       player.position.row++;
-//       break;
-//
-//     case 37:
-//     case 65:
-//       //left A
-//       player.position.col--;
-//       break;
-//
-//     default:
-//       console.log('default');
-//   }
-// }
