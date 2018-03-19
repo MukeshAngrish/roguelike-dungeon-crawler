@@ -9,6 +9,8 @@ class App extends React.Component {
     // binding methods
     this.reset = this.reset.bind(this);
     this.playerMove = this.playerMove.bind(this);
+    this.pickHealth = this.pickHealth.bind(this);
+    // this.pickWeapon = this.pickWeapon.bind(this);
     this.handleKeyPress = this.handleKeyPress.bind(this);
   }
 
@@ -24,65 +26,106 @@ class App extends React.Component {
       col : player.position.col + direction[1],
     }
     if(!((position.row >= 0 && position.row < 40) &&
-         (position.col >= 0 && position.col < 40))) return;
+         (position.col >= 0 && position.col < 40))){
+           this.setState({
+             message : {
+               text : 'You hit the wall',
+               type : 'alert',
+             }
+           });
+           return;
+         }
     let gridVal = grid[position.row][position.col];
     switch (gridVal) {
       case 1: //moving in the lightblue(walkable) area
         grid[player.position.row][player.position.col] = 1;
         grid[position.row][position.col] = 2;
         player.position = position;
-        this.setState({ player, grid });
+        this.setState({
+          player,
+          grid,
+          message : {
+            text : 'Use the arrow keys or WASD to move the player',
+            type : 'inform',
+          },
+        });
         break;
 
       case 3:
         // fight villain
-        console.log('fight');
+        console.log('fight the villains');
+
         break;
 
       case 4: // random health
-        grid[player.position.row][player.position.col] = 1;
-        grid[position.row][position.col] = 2;
-        player.position = position;
-        player.health += Math.floor((Math.random() * (120-20)) + 20);
-        this.setState({ player, grid });
+        this.pickHealth(player, grid, position);
         break;
 
       case 5: // random weapon
-        grid[player.position.row][player.position.col] = 1;
-        grid[position.row][position.col] = 2;
-        player.position = position;
-        player.weapon = Math.floor(Math.random() * 5);
-        this.setState({ player, grid });
+        this.pickWeapon(player, grid, position);
         break;
 
       default:
-        console.log('wtf?!')
+        this.setState({
+          message : {
+            text : 'You hit the wall',
+            type : 'alert',
+          }
+        });
     }
+    console.log(this.state.message);
+  }
+
+  pickHealth(player, grid, position) {
+    grid[player.position.row][player.position.col] = 1;
+    grid[position.row][position.col] = 2;
+    player.position = position;
+    player.health += Math.floor((Math.random() * (120-20)) + 20);
+    this.setState({
+      player,
+      grid,
+      message : {
+        text : `You collected a health booster! Current player health is ${player.health}`,
+        type : 'good',
+      },
+    });
+  }
+
+  pickWeapon(player, grid, position) {
+    let weapons = ['Weapon1', 'Weapon2', 'Weapon3', 'Weapon4', 'Weapon5', 'Weapon6'];
+    grid[player.position.row][player.position.col] = 1;
+    grid[position.row][position.col] = 2;
+    player.position = position;
+    player.weapon = Math.floor(Math.random() * weapons.length);
+    this.setState({
+      player,
+      grid,
+      message : {
+        text : `You collected a new weapon! Current weapon is ${weapons[player.weapon]}`,
+        type : 'good',
+      },
+    });
   }
 
   handleKeyPress(event) {
     switch (event.keyCode) {
-      case 38:
-      case 87:
-        //up W
+      case 38: // Up
+      case 87: // W
         this.playerMove([-1, 0]);
         break;
 
-      case 39:
-      case 68:
-        //right D
+      case 39: // Right
+      case 68: // D
         this.playerMove([0, 1]);
         break;
 
-      case 40:
-      case 83:
-        //down S
+      case 40: // Down
+      case 83: // S
         this.playerMove([1, 0]);
         break;
 
-      case 37:
-      case 65:
-        //left A
+      case 37: // Left
+      case 65: // A
         this.playerMove([0, -1]);
         break;
 
