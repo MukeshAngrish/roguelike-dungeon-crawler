@@ -36,7 +36,7 @@ class App extends React.Component {
 
       case 3:
         // fight villain
-        console.log('fight');
+        console.log('fight the villains');
         break;
 
       case 4: // random health
