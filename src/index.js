@@ -289,11 +289,8 @@ function createArray(num, dimensions) {
   return array;
 }
 
-function createMap() { //Random Walker Algorithm
-  let dimensions = 40,
-    maxTunnels = 210,
-    maxLength = 12,
-    map = createArray(0, dimensions),
+function createMap(dimensions = 40, maxTunnels = 210, maxLength = 12) { //Random Walker Algorithm
+  let map = createArray(0, dimensions),
     currentRow = Math.floor(Math.random() * dimensions),
     currentColumn = Math.floor(Math.random() * dimensions),
     directions = [[-1, 0],[1, 0],[0, -1],[0, 1]],
@@ -352,7 +349,7 @@ function randomPosition(grid) {
 }
 
 function initialState() {
-  let grid = createMap();
+  let grid = createMap(40, 210, 12);
   let position = randomPosition(grid);
   const state = {
     grid,
