@@ -234,7 +234,7 @@ class App extends React.Component {
     const { player, grid, lights, message } = this.state;
     return (
       <div className = "roguelike">
-        <Legend
+        <Menu
           player = { player }
           grid = { grid }
           lights = { lights }
@@ -249,7 +249,7 @@ class App extends React.Component {
   }
 }
 
-class Legend extends React.Component {
+class Menu extends React.Component {
   render() {
     const levels = [0, 50, 100, 150, 200,
                     300, 400, 500, 600, 700,
