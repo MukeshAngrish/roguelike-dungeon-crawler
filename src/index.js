@@ -114,7 +114,7 @@ class App extends React.Component {
       }
     } else {
       villains.splice(index, 1);
-      // player.xp += (villains[index].level * 100);
+      player.xp += (villains[index].level * 100);
       grid[player.position.row][player.position.col] = 1;
       grid[position.row][position.col] = 2;
       player.position = position;
@@ -138,7 +138,7 @@ class App extends React.Component {
     player.position = position;
     health = healths[Math.floor(Math.random() * healths.length)]
     player.health += health;
-    // player.xp += health;
+    player.xp += health;
     this.setState({
       player,
       grid,
@@ -155,7 +155,7 @@ class App extends React.Component {
     grid[position.row][position.col] = 2;
     player.position = position;
     player.weapon = Math.floor(Math.random() * weapons.length);
-    // player.xp += (player.weapon * 50);
+    player.xp += (player.weapon * 50);
     this.setState({
       player,
       grid,
@@ -205,21 +205,21 @@ class App extends React.Component {
   }
 
   componentWillUpdate() {
-    // const levels = [0, 50, 100, 150, 200,
-    //                 300, 400, 500, 600, 700,
-    //                 900, 1100, 1300, 1500, 1700,
-    //                 2100, 2500, 2900, 3300, 3700];
-    // let { player } = this.state;
-    // if(player.xp >= levels[player.level]) {
-    //   player.level += 1;
-    //   this.setState({
-    //     player,
-    //     message : {
-    //       text : 'You levelled up!',
-    //       type : 'good',
-    //     }
-    //   });
-    // }
+    const levels = [0, 50, 100, 150, 200,
+                    300, 400, 500, 600, 700,
+                    900, 1100, 1300, 1500, 1700,
+                    2100, 2500, 2900, 3300, 3700];
+    let { player } = this.state;
+    if(player.xp >= levels[player.level]) {
+      player.level += 1;
+      this.setState({
+        player,
+        message : {
+          text : 'You levelled up!',
+          type : 'good',
+        }
+      });
+    }
   }
 
   render() {
