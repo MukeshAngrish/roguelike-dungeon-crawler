@@ -8,6 +8,7 @@ class App extends React.Component {
     this.state = getState();
     // binding methods
     this.reset = this.reset.bind(this);
+    this.toggleLights = this.toggleLights.bind(this);
     this.playerMove = this.playerMove.bind(this);
     this.freeMove = this.freeMove.bind(this);
     this.fightVillain = this.fightVillain.bind(this);
@@ -19,6 +20,12 @@ class App extends React.Component {
   reset() {
     const state = getState();
     this.setState(state);
+  }
+
+  toggleLights() {
+    let { lights } = this.state;
+    lights = lights === 'off' ? 'on' : 'off';
+    this.setState({ lights });
   }
 
   playerMove(direction) {
@@ -96,7 +103,7 @@ class App extends React.Component {
           player,
           villains,
           message : {
-            text : `You are fighting a villain. His remaining health is ${villains[index].health}`,
+            text : `You are fighting a Level ${villains[index].level} villain. His remaining health is ${villains[index].health}`,
             type : 'hit flash',
           }
         })
@@ -113,11 +120,11 @@ class App extends React.Component {
         })
       }
     } else {
-      villains.splice(index, 1);
-      player.xp += (villains[index].level * 100);
       grid[player.position.row][player.position.col] = 1;
       grid[position.row][position.col] = 2;
+      player.xp += (villains[index].level * 100);
       player.position = position;
+      villains.splice(index, 1);
       this.setState({
         player,
         villains,
@@ -150,7 +157,7 @@ class App extends React.Component {
   }
 
   pickWeapon(player, grid, position) {
-    let weapons = ['Weapon1', 'Weapon2', 'Weapon3', 'Weapon4', 'Weapon5', 'Weapon6'];
+    const weapons = ['Weapon1', 'Weapon2', 'Weapon3', 'Weapon4', 'Weapon5', 'Weapon6'];
     grid[player.position.row][player.position.col] = 1;
     grid[position.row][position.col] = 2;
     player.position = position;
@@ -208,8 +215,9 @@ class App extends React.Component {
     const levels = [0, 50, 100, 150, 200,
                     300, 400, 500, 600, 700,
                     900, 1100, 1300, 1500, 1700,
-                    2100, 2500, 2900, 3300, 3700];
-    let { player } = this.state;
+                    2000, 2300, 2600, 2900, 3200,
+                    3600, 4000, 4400, 4800, 5200];
+    const { player } = this.state;
     if(player.xp >= levels[player.level]) {
       player.level += 1;
       this.setState({
@@ -223,12 +231,71 @@ class App extends React.Component {
   }
 
   render() {
+    const { player, grid, lights, message } = this.state;
     return (
       <div className = "roguelike">
-        <Map
-          grid = {this.state.grid}
-          player = {this.state.player}
+        <Legend
+          player = { player }
+          grid = { grid }
+          lights = { lights }
+          message = { message }
         />
+        <Map
+          grid = { grid }
+          player = { player }
+        />
+      </div>
+    );
+  }
+}
+
+class Legend extends React.Component {
+  render() {
+    const levels = [0, 50, 100, 150, 200,
+                    300, 400, 500, 600, 700,
+                    900, 1100, 1300, 1500, 1700,
+                    2000, 2300, 2600, 2900, 3200,
+                    3600, 4000, 4400, 4800, 5200];
+    const weapons = ['Weapon1', 'Weapon2', 'Weapon3', 'Weapon4', 'Weapon5', 'Weapon6'];
+    let { player, grid, lights, message } = this.props;
+    return (
+      <div className = 'legend'>
+        <div className = 'title'></div>
+        <div className = 'stats'>
+          <h3>Player Stats</h3>
+          <ul>
+            <li><strong>Level: </strong>{ player.level }</li>
+            <li><strong>Health: </strong>{ player.health }</li>
+            <li><strong>XP: </strong>{ player.xp } / { levels[player.level] }</li>
+            <li><strong>Armed with: </strong>{ weapons[player.weapon] }</li>
+          </ul>
+        </div>
+        <div className = 'message'>
+          <div className = {this.props.message.type}>{this.props.message.text}</div>
+        </div>
+        <div className = 'map-items'>
+          <ul>
+            <li><Cell val={0} cellClass={'cell unwalkable'}/>
+              <span> Unwalkable Area</span>
+            </li>
+            <li><Cell val={1} cellClass={'cell walkable'}/>
+              <span> Walkable Area</span>
+            </li>
+            <li><Cell val={2} cellClass={'cell walkable'}/>
+              <span> Player</span>
+            </li>
+            <li><Cell val={3} cellClass={'cell walkable'}/>
+              <span> Villain</span>
+            </li>
+            <li><Cell val={4} cellClass={'cell walkable'}/>
+              <span> Health</span>
+            </li>
+            <li><Cell val={5} cellClass={'cell walkable'}/>
+              <span> Weapon</span>
+            </li>
+          </ul>
+        </div>
+        <div className = 'story'></div>
       </div>
     );
   }
@@ -425,7 +492,7 @@ function getState() {
 }
 
 function dealDamage(level, weapon) {
-  const damages = [20, 30, 50, 80, 120, 170, 230, 300, 380, 470];
+  const damages = [20, 30, 50, 80, 120, 170, 230, 300, 380, 470, 570, 680];
   const damage = damages[Math.ceil(Math.random() * (level / 2))];
   return (damage + ((weapon * 10 * damage) / 100));
 }

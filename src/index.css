@@ -1,3 +1,10 @@
+.legend {
+  width : 350px;
+  color : white;
+  background : black;
+  margin: 0px;
+}
+
 .map {
   line-height: 0;
   width : 600px;
