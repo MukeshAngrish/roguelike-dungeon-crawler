@@ -1,61 +1,152 @@
-.legend {
-  width : 350px;
-  color : white;
-  background : black;
+body {
   margin: 0px;
+}
+
+ul {
+  list-style-type: none;
+}
+
+li {
+  padding: 1px;
+}
+
+.title {
+  font-family: "Love Ya Like A Sister", cursive;
+  font-size: 38px;
+}
+
+.roguelike {
+  display: grid;
+  grid-template-columns: auto auto;
+  font-family: "Montserrat", cursive;
+}
+
+.menu {
+  width: 350px;
+  font-size: 20px;
+  padding-top: 20px;
+  padding-left: 5px;
+  color: white;
+  background: black;
+  margin-top: 6%;
+  margin-bottom: 6%;
+}
+
+.stats > h3 {
+  text-align: center;
+}
+
+.map-items > h3 {
+  text-align: center;
+}
+
+.message {
+  width : 300px;
+  height : 38px;
+  margin : auto;
+  padding : 5px;
+  border: 1px solid lightgray;
+}
+
+.hit {
+  background-color: #B22222;
+  color : lightgray;
+  height : 38px;
+  animation-duration : 1s;
+  animation-fill-mode: both;
+}
+
+@@keyframes flash {
+  0%, 50%, 100% {
+    opacity : 1;
+  }
+  25%, 75% {
+    opacity: 0;
+  }
+}
+
+.flash {
+  animation-name: flash;
+}
+
+.alert {
+  color : lightgray;
+  background-color : lighten(#B22222, 25%);
+  height : 38px;
+}
+
+.inform {
+  color : black;
+  background-color : lightgray;
+  height : 38px;
+}
+
+.good {
+  color : black;
+  background-color: springgreen;
+  height : 38px;
+}
+
+.story {
+  background: white;
+  color: brown;
+  width : 300px;
+  margin : auto;
+  padding : 5px;
 }
 
 .map {
   line-height: 0;
-  width : 600px;
-  box-shadow : 2px 2px 10px black;
-  margin : auto;
+  width: 600px;
+  box-shadow: 2px 2px 10px black;
+  margin-top: 6%;
+  margin-bottom: 6%;
 }
 
 .cell {
   display: inline-block;
-  width : 15px;
-  height : 12px;
-  padding-top : 3px;
+  width: 15px;
+  height: 12px;
+  padding-top: 3px;
+}
+
+.player {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: 2px solid white;
+  background: purple;
+  margin: auto;
+}
+
+.health {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: blue;
+  margin: auto;
+}
+
+.weapon {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: black;
+  margin: auto;
+}
+
+.villain {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: brown;
+  margin: auto;
 }
 
 .walkable {
-  background : lightblue;
+  background: lightblue;
 }
 
 .unwalkable {
   background: gray;
-}
-
-.health {
-  width : 10px;
-  height : 10px;
-  border-radius : 50%;
-  background : blue;
-  margin : auto;
-}
-
-.weapon {
-  width : 10px;
-  height : 10px;
-  border-radius : 50%;
-  background : black;
-  margin : auto;
-}
-
-.villain {
-  width : 10px;
-  height : 10px;
-  border-radius : 50%;
-  background : brown;
-  margin : auto;
-}
-
-.player {
-  width : 8px;
-  height : 8px;
-  border-radius : 50%;
-  border : 2px solid white;
-  background : purple;
-  margin : auto;
 }

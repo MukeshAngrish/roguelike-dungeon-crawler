@@ -259,8 +259,11 @@ class Menu extends React.Component {
     const weapons = ['Weapon1', 'Weapon2', 'Weapon3', 'Weapon4', 'Weapon5', 'Weapon6'];
     let { player, grid, lights, message } = this.props;
     return (
-      <div className = 'legend'>
-        <div className = 'title'></div>
+      <div className = 'menu'>
+        <div className = 'title'>
+          <div>Vogue</div>
+          <div>A Roguelike</div>
+        </div>
         <div className = 'stats'>
           <h3>Player Stats</h3>
           <ul>
@@ -274,6 +277,7 @@ class Menu extends React.Component {
           <div className = {this.props.message.type}>{this.props.message.text}</div>
         </div>
         <div className = 'map-items'>
+          <h3>Map Items</h3>
           <ul>
             <li><Cell val={0} cellClass={'cell unwalkable'}/>
               <span> Unwalkable Area</span>
@@ -295,7 +299,6 @@ class Menu extends React.Component {
             </li>
           </ul>
         </div>
-        <div className = 'story'></div>
       </div>
     );
   }
