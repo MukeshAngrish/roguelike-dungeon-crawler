@@ -9,7 +9,8 @@ class App extends React.Component {
     // binding methods
     this.reset = this.reset.bind(this);
     this.playerMove = this.playerMove.bind(this);
-    this.fightVillains = this.fightVillains.bind(this);
+    this.freeMove = this.freeMove.bind(this);
+    this.fightVillain = this.fightVillain.bind(this);
     this.pickHealth = this.pickHealth.bind(this);
     this.pickWeapon = this.pickWeapon.bind(this);
     this.handleKeyPress = this.handleKeyPress.bind(this);
@@ -38,35 +39,23 @@ class App extends React.Component {
          }
     let gridVal = grid[position.row][position.col];
     switch (gridVal) {
-      case 1: //moving in the lightblue(walkable) area
-        grid[player.position.row][player.position.col] = 1;
-        grid[position.row][position.col] = 2;
-        player.position = position;
-        this.setState({
-          player,
-          grid,
-          message : {
-            text : 'Use the arrow keys or WASD to move the player',
-            type : 'inform',
-          },
-        });
+      case 1: // moving in the lightblue(walkable) area
+        this.freeMove(player, grid, position);
         break;
 
-      case 3:
-        // fight villain
-        console.log('fight the villain');
-        // this.fightVillains()
+      case 3: // fight the villain in turns to move ahead
+        this.fightVillain(player, grid, position);
         break;
 
-      case 4: // random health
+      case 4: // pick up random amount of health
         this.pickHealth(player, grid, position);
         break;
 
-      case 5: // random weapon
+      case 5: // pick up a random weapon
         this.pickWeapon(player, grid, position);
         break;
 
-      default:
+      default: // when you hit a wall (gray area)
         this.setState({
           message : {
             text : 'You hit the wall',
@@ -74,19 +63,82 @@ class App extends React.Component {
           }
         });
     }
-    console.log(this.state.message);
   }
 
-  fightVillains() {
-    //
+  freeMove(player, grid, position) {
+    grid[player.position.row][player.position.col] = 1;
+    grid[position.row][position.col] = 2;
+    player.position = position;
+    this.setState({
+      player,
+      grid,
+      message : {
+        text : 'Use the arrow keys or WASD to move the player',
+        type : 'inform',
+      },
+    });
+  }
+
+  fightVillain(player, grid, position) {
+    let { villains } = this.state;
+    let index;
+    for(let i = 0; i < villains.length; i++) {
+      if(villains[i].position.row === position.row &&
+         villains[i].position.col === position.col) {
+        index = i;
+      }
+    }
+    villains[index].health -= dealDamage(player.level, player.weapon);
+    if(villains[index].health > 0) {
+      player.health -= dealDamage(villains[index].level, Math.ceil(Math.random() * 5));
+      if(player.health > 0) {
+        this.setState({
+          player,
+          villains,
+          message : {
+            text : `You are fighting a villain. His remaining health is ${villains[index].health}`,
+            type : 'hit flash',
+          }
+        })
+      } else {
+        player.health = 0;
+        this.setState({
+          player,
+          villains,
+          message : {
+            text : 'You were killed. Game Over!',
+            type : 'alert',
+          },
+          gameStatus : 0,
+        })
+      }
+    } else {
+      villains.splice(index, 1);
+      player.xp += (villains[index].level * 100);
+      grid[player.position.row][player.position.col] = 1;
+      grid[position.row][position.col] = 2;
+      player.position = position;
+      this.setState({
+        player,
+        villains,
+        grid,
+        message : {
+          text : 'You killed a bad guy. Time to kill some more',
+          type : 'good',
+        }
+      });
+    }
   }
 
   pickHealth(player, grid, position) {
     let healths = [20, 40, 60, 80, 100, 120];
+    let health;
     grid[player.position.row][player.position.col] = 1;
     grid[position.row][position.col] = 2;
     player.position = position;
-    player.health += healths[Math.floor(Math.random() * healths.length)];
+    health = healths[Math.floor(Math.random() * healths.length)]
+    player.health += health;
+    player.xp += health;
     this.setState({
       player,
       grid,
@@ -103,6 +155,7 @@ class App extends React.Component {
     grid[position.row][position.col] = 2;
     player.position = position;
     player.weapon = Math.floor(Math.random() * weapons.length);
+    player.xp += (player.weapon * 50);
     this.setState({
       player,
       grid,
@@ -149,6 +202,24 @@ class App extends React.Component {
 
   componentDidMount() {
     window.addEventListener('keydown', this.handleKeyPress);
+  }
+
+  componentWillUpdate() {
+    const levels = [0, 50, 100, 150, 200,
+                    300, 400, 500, 600, 700,
+                    900, 1100, 1300, 1500, 1700,
+                    2100, 2500, 2900, 3300, 3700];
+    let { player } = this.state;
+    if(player.xp >= levels[player.level]) {
+      player.level += 1;
+      this.setState({
+        player,
+        message : {
+          text : 'You levelled up!',
+          type : 'good',
+        }
+      });
+    }
   }
 
   render() {
@@ -218,11 +289,8 @@ function createArray(num, dimensions) {
   return array;
 }
 
-function createMap() { //Random Walker Algorithm
-  let dimensions = 40,
-    maxTunnels = 210,
-    maxLength = 12,
-    map = createArray(0, dimensions),
+function createMap(dimensions = 40, maxTunnels = 210, maxLength = 12) { //Random Walker Algorithm
+  let map = createArray(0, dimensions),
     currentRow = Math.floor(Math.random() * dimensions),
     currentColumn = Math.floor(Math.random() * dimensions),
     directions = [[-1, 0],[1, 0],[0, -1],[0, 1]],
@@ -281,7 +349,7 @@ function randomPosition(grid) {
 }
 
 function initialState() {
-  let grid = createMap();
+  let grid = createMap(40, 210, 12);
   let position = randomPosition(grid);
   const state = {
     grid,
@@ -316,7 +384,7 @@ function placeVillains(state) {
     state.villains.push({
       position,
       health,
-      level,
+      level : Math.ceil(Math.random() * level),
     });
     state.grid[position.row][position.col] = 3;
     health += 50;
@@ -354,4 +422,10 @@ function getState() {
 	const state3 = placeHealth(state2);
 	const state4 = placeWeapons(state3);
 	return state4;
+}
+
+function dealDamage(level, weapon) {
+  const damages = [20, 30, 50, 80, 120, 170, 230, 300, 380, 470];
+  const damage = damages[Math.ceil(Math.random() * (level / 2))];
+  return (damage + ((weapon * 10 * damage) / 100));
 }
