@@ -9,7 +9,7 @@ impending alien invasion. Just as you are informed, the invasion
 begins, spearheaded by the alien warlord The Boss, who captures
 the entire cabinet, including you.
 
-You realise that you are trapped inside a randomised simulation.
+You realize that you are trapped inside a randomized simulation.
 You can collect weapons and health to gain XP. Kill all the villains
 to weakens the simulation and gain mega XP. Without any villains
 left The Boss will be forced to face you.
