@@ -52,6 +52,7 @@ class App extends React.Component {
         break;
 
       case 2: // fight the boss
+        console.log('fightBoss');
         this.fightBoss(player, grid, position);
         break;
 
@@ -81,19 +82,29 @@ class App extends React.Component {
     grid[player.position.row][player.position.col] = 1;
     grid[position.row][position.col] = 2;
     player.position = position;
+    let message;
+    if(this.state.theBoss.isHere) {
+      message = {
+        text : 'The Boss has appeared on the map. Its time to save the world!',
+        type : 'good',
+      }
+    } else {
+      message = {
+        text : 'Find and kill the villains to weaken the simulation and force The Boss to appear.',
+        type : 'inform',
+      }
+    }
     this.setState({
       player,
       grid,
-      message : {
-        text : 'Use the arrow keys or WASD to move the player',
-        type : 'inform',
-      },
+      message,
     });
   }
 
   fightBoss(player, grid, position) {
     let { theBoss } = this.state;
     theBoss.health -= dealDamage(player.level, player.weapon);
+    console.log(theBoss.health)
     if(theBoss.health > 0) {
       player.health -= dealDamage(theBoss.level, theBoss.weapon);
       if(player.health > 0) {
@@ -102,7 +113,7 @@ class App extends React.Component {
           theBoss,
           message : {
             text : `You are fighting The Boss.
-                    His remaining health is ${theBoss.health}`,
+                    His remaining health is ${theBoss.health}.`,
             type : 'hit flash',
           }
         })
@@ -128,7 +139,7 @@ class App extends React.Component {
         player,
         grid,
         message : {
-          text : 'You killed The Boss. Time to celebrate',
+          text : 'You killed The Boss. You saved the world!',
           type : 'good',
         },
         theBoss,
@@ -153,7 +164,8 @@ class App extends React.Component {
           player,
           villains,
           message : {
-            text : `You are fighting a Level ${villains[index].level} villain. His remaining health is ${villains[index].health}`,
+            text : `You are fighting a Level ${villains[index].level} villain.
+                    His remaining health is ${villains[index].health}.`,
             type : 'hit flash',
           }
         })
@@ -174,26 +186,31 @@ class App extends React.Component {
       player.xp += (villains[index].level * 100);
       player.position = position;
       villains.splice(index, 1);
-      if(!villains.length) {
-        theBoss = {
-          isHere : true,
-          health : 2000,
-          weapon : 6,
-          level : 25,
-          position : randomPosition(grid),
-        }
-      }
       this.setState({
         player,
         villains,
         grid,
         message : {
-          text : 'You killed a bad guy. Time to kill some more',
+          text : 'You killed a bad guy. Time to kill some more.',
           type : 'good',
         },
         theBoss,
         lightsOn: true,
       });
+      if(!villains.length) {
+        theBoss = {
+          isHere : true,
+          health : 6000,
+          weapon : 6,
+          level : 25,
+          position : randomPosition(grid),
+          message : {
+            text : 'The Boss has been forced to face you. Kill him and save the world!',
+            type : 'good',
+          },
+        }
+        grid[theBoss.position.row][theBoss.position.col] = 2;
+      }
     }
   }
 
