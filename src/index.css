@@ -25,7 +25,7 @@ span {
   font-size: 20px;
   padding-top: 20px;
   padding-left: 5px;
-  color: white;
+  color: #EBEDEF;
   background: #2D2C2A;
   margin-top: 4%;
   margin-bottom: 2%;
@@ -103,6 +103,33 @@ span {
   margin: 6% auto;
 }
 
+.win {
+  padding: 50px;
+  width: 500px;
+  box-shadow: 2px 2px 10px black;
+  height: 500px;
+  margin: 6% auto;
+}
+
+.lose {
+  padding: 50px;
+  width: 500px;
+  box-shadow: 2px 2px 10px black;
+  height: 500px;
+  margin: 6% auto;
+}
+
+.heading {
+  font-size: 100px;
+  font-family: "Love Ya Like A Sister", cursive;
+  text-align: center;
+}
+
+.paragraph {
+  font-size : 40px;
+  text-align: justify;
+}
+
 .cell {
   display: inline-block;
   width: 15px;
@@ -111,11 +138,10 @@ span {
 }
 
 .player {
-  width: 8px;
-  height: 8px;
+  width: 10px;
+  height: 10px;
   border-radius: 50%;
-  border: 2px solid white;
-  background: purple;
+  background: #9300C5;
   margin: auto;
 }
 
