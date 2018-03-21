@@ -8,6 +8,7 @@ class App extends React.Component {
     this.state = getState();
     // binding methods
     this.reset = this.reset.bind(this);
+    this.toggleLights = this.toggleLights.bind(this);
     this.playerMove = this.playerMove.bind(this);
     this.freeMove = this.freeMove.bind(this);
     this.fightVillain = this.fightVillain.bind(this);
@@ -19,6 +20,11 @@ class App extends React.Component {
   reset() {
     const state = getState();
     this.setState(state);
+  }
+
+  toggleLights() {
+    const lightsOn = this.state.lightsOn === false ? true : false;
+    this.setState({ lightsOn });
   }
 
   playerMove(direction) {
@@ -184,6 +190,7 @@ class App extends React.Component {
           type : 'good',
         },
         theBoss,
+        lightsOn: true,
       });
     }
   }
@@ -282,7 +289,7 @@ class App extends React.Component {
   }
 
   render() {
-    const { player, grid, lights, message } = this.state;
+    const { player, grid, lights, message, lightsOn } = this.state;
     return (
       <div className = "roguelike">
         <Menu
@@ -294,6 +301,7 @@ class App extends React.Component {
         <Map
           grid = { grid }
           player = { player }
+          lightsOn = { lightsOn }
         />
       </div>
     );
@@ -330,22 +338,22 @@ class Menu extends React.Component {
         <div className = 'map-items'>
           <h3>Map Items</h3>
           <ul>
-            <li><Cell val={0} cellClass={'cell unwalkable'}/>
+            <li><Cell val={0} visible={true} />
               <span> Unwalkable Area</span>
             </li>
-            <li><Cell val={1} cellClass={'cell walkable'}/>
+            <li><Cell val={1} visible={true} />
               <span> Walkable Area</span>
             </li>
-            <li><Cell val={2} cellClass={'cell walkable'}/>
+            <li><Cell val={2} visible={true} />
               <span> Player</span>
             </li>
-            <li><Cell val={3} cellClass={'cell walkable'}/>
+            <li><Cell val={3} visible={true} />
               <span> Villain</span>
             </li>
-            <li><Cell val={4} cellClass={'cell walkable'}/>
+            <li><Cell val={4} visible={true} />
               <span> Health</span>
             </li>
-            <li><Cell val={5} cellClass={'cell walkable'}/>
+            <li><Cell val={5} visible={true} />
               <span> Weapon</span>
             </li>
           </ul>
@@ -357,18 +365,38 @@ class Menu extends React.Component {
 
 class Map extends React.Component {
   render() {
-    let { grid, player } = this.props;
-    const gameMap = grid.map((rowsArr, row) => {
+    const { grid, lightsOn } = this.props;
+    const { row, col } = this.props.player.position;
+    const gameMap = grid.map((rowsArr, rowIdx) => {
       return (
-        rowsArr.map((cell, col) => {
-          const cellId = `${row}|${col}`;
-					const val = grid[row][col];
+        rowsArr.map((cell, colIdx) => {
+          const cellId = `${rowIdx}|${colIdx}`;
+					const val = grid[rowIdx][colIdx];
+          let visible;
+          if(lightsOn) {
+            visible = true;
+          } else {
+            const rowDiff = Math.abs(row - rowIdx);
+            const colDiff = Math.abs(col - colIdx);
+            visible = (
+              (rowDiff === 3 && colDiff === 0) ||
+              (rowDiff === 2 && colDiff === 0) ||
+              (rowDiff === 2 && colDiff === 1) ||
+              (rowDiff === 1 && colDiff === 0) ||
+              (rowDiff === 1 && colDiff === 1) ||
+              (rowDiff === 1 && colDiff === 2) ||
+              (rowDiff === 0 && colDiff === 0) ||
+              (rowDiff === 0 && colDiff === 1) ||
+              (rowDiff === 0 && colDiff === 2) ||
+              (rowDiff === 0 && colDiff === 3)
+            );
+          }
           return (
             <Cell
               key = { cellId }
               id = { cellId }
-              cellClass = { (val === 0) ? 'cell unwalkable' : 'cell walkable' }
               val = { val }
+              visible = { visible }
             />
           );
         })
@@ -384,28 +412,22 @@ class Map extends React.Component {
 
 class Cell extends React.Component {
   render() {
+    const { val, visible, id } = this.props;
+    const cellClass = 'cell ' + (visible ? (val === 0 ? 'unwalkable' : 'walkable') : 'dark')
     return (
-      <div className = { this.props.cellClass } id = { this.props.id }>
-        {this.props.val === 2 && <div className = "player"></div>}
-				{this.props.val === 3 && <div className = "villain"></div>}
-				{this.props.val === 4 && <div className = "health"></div>}
-				{this.props.val === 5 && <div className = "weapon"></div>}
-      </div>
-    );
-  }
-}
-
-class BlackCell extends React.Component {
-  render() {
-    return (
-      <div className = {this.props.cellClass}>
-        {this.props.val === 2 && <div className = "player"></div>}
+      <div className = { cellClass } id = { id }>
+        {visible && val === 2 && <div className = "player"></div>}
+        {visible && val === 3 && <div className = "villain"></div>}
+        {visible && val === 4 && <div className = "health"></div>}
+        {visible && val === 5 && <div className = "weapon"></div>}
       </div>
     );
   }
 }
 
 ReactDOM.render(<App />, document.getElementById('root'));
+
+/*-------------------- Helper Functions below --------------------------*/
 
 function createArray(num, dimensions) {
   let array = [];
@@ -418,7 +440,8 @@ function createArray(num, dimensions) {
   return array;
 }
 
-function createMap(dimensions = 40, maxTunnels = 210, maxLength = 12) { //Random Walker Algorithm
+function createMap(dimensions = 40, maxTunnels = 210, maxLength = 12) {
+  //Random Walker Algorithm
   let map = createArray(0, dimensions),
     currentRow = Math.floor(Math.random() * dimensions),
     currentColumn = Math.floor(Math.random() * dimensions),
@@ -497,6 +520,7 @@ function initialState() {
     theBoss : {
       isHere : false,
     },
+    lightsOn : false,
   };
   state.grid[position.row][position.col] = 2;
   return state;
@@ -559,7 +583,4 @@ function dealDamage(level, weapon) {
   return (damage + ((weapon * 10 * damage) / 100));
 }
 
-function checkNearby(row, col, position) {
-  console.log('checkNearby');
-  return true;
-}
+/*------------------------- Program End --------------------------*/
