@@ -23,9 +23,8 @@ class App extends React.Component {
   }
 
   toggleLights() {
-    let { lights } = this.state;
-    lights = lights === 'off' ? 'on' : 'off';
-    this.setState({ lights });
+    const lightsOn = this.state.lightsOn === false ? true : false;
+    this.setState({ lightsOn });
   }
 
   playerMove(direction) {
@@ -48,6 +47,10 @@ class App extends React.Component {
     switch (gridVal) {
       case 1: // moving in the lightblue(walkable) area
         this.freeMove(player, grid, position);
+        break;
+
+      case 2: // fight the boss
+        this.fightBoss(player, grid, position);
         break;
 
       case 3: // fight the villain in turns to move ahead
@@ -86,8 +89,53 @@ class App extends React.Component {
     });
   }
 
+  fightBoss(player, grid, position) {
+    let { theBoss } = this.state;
+    theBoss.health -= dealDamage(player.level, player.weapon);
+    if(theBoss.health > 0) {
+      player.health -= dealDamage(theBoss.level, theBoss.weapon);
+      if(player.health > 0) {
+        this.setState({
+          player,
+          theBoss,
+          message : {
+            text : `You are fighting The Boss.
+                    His remaining health is ${theBoss.health}`,
+            type : 'hit flash',
+          }
+        })
+      } else {
+        player.health = 0;
+        this.setState({
+          player,
+          message : {
+            text : 'You were killed by The Boss. Game Over!',
+            type : 'alert',
+          },
+        })
+      }
+    } else {
+      grid[player.position.row][player.position.col] = 1;
+      grid[position.row][position.col] = 2;
+      player.xp += (theBoss.level * 1000);
+      player.position = position;
+      theBoss = {
+        isHere : true,
+      }
+      this.setState({
+        player,
+        grid,
+        message : {
+          text : 'You killed The Boss. Time to celebrate',
+          type : 'good',
+        },
+        theBoss,
+      });
+    }
+  }
+
   fightVillain(player, grid, position) {
-    let { villains } = this.state;
+    let { villains, theBoss } = this.state;
     let index;
     for(let i = 0; i < villains.length; i++) {
       if(villains[i].position.row === position.row &&
@@ -116,7 +164,6 @@ class App extends React.Component {
             text : 'You were killed. Game Over!',
             type : 'alert',
           },
-          gameStatus : 0,
         })
       }
     } else {
@@ -125,6 +172,15 @@ class App extends React.Component {
       player.xp += (villains[index].level * 100);
       player.position = position;
       villains.splice(index, 1);
+      if(!villains.length) {
+        theBoss = {
+          isHere : true,
+          health : 2000,
+          weapon : 6,
+          level : 25,
+          position : randomPosition(grid),
+        }
+      }
       this.setState({
         player,
         villains,
@@ -132,7 +188,9 @@ class App extends React.Component {
         message : {
           text : 'You killed a bad guy. Time to kill some more',
           type : 'good',
-        }
+        },
+        theBoss,
+        lightsOn: true,
       });
     }
   }
@@ -231,7 +289,7 @@ class App extends React.Component {
   }
 
   render() {
-    const { player, grid, lights, message } = this.state;
+    const { player, grid, lights, message, lightsOn } = this.state;
     return (
       <div className = "roguelike">
         <Menu
@@ -243,6 +301,7 @@ class App extends React.Component {
         <Map
           grid = { grid }
           player = { player }
+          lightsOn = { lightsOn }
         />
       </div>
     );
@@ -257,7 +316,7 @@ class Menu extends React.Component {
                     2000, 2300, 2600, 2900, 3200,
                     3600, 4000, 4400, 4800, 5200];
     const weapons = ['Weapon1', 'Weapon2', 'Weapon3', 'Weapon4', 'Weapon5', 'Weapon6'];
-    let { player, grid, lights, message } = this.props;
+    let { player, message } = this.props;
     return (
       <div className = 'menu'>
         <div className = 'title'>
@@ -274,27 +333,27 @@ class Menu extends React.Component {
           </ul>
         </div>
         <div className = 'message'>
-          <div className = {this.props.message.type}>{this.props.message.text}</div>
+          <div className = {message.type}>{message.text}</div>
         </div>
         <div className = 'map-items'>
           <h3>Map Items</h3>
           <ul>
-            <li><Cell val={0} cellClass={'cell unwalkable'}/>
+            <li><Cell val={0} visible={true} />
               <span> Unwalkable Area</span>
             </li>
-            <li><Cell val={1} cellClass={'cell walkable'}/>
+            <li><Cell val={1} visible={true} />
               <span> Walkable Area</span>
             </li>
-            <li><Cell val={2} cellClass={'cell walkable'}/>
+            <li><Cell val={2} visible={true} />
               <span> Player</span>
             </li>
-            <li><Cell val={3} cellClass={'cell walkable'}/>
+            <li><Cell val={3} visible={true} />
               <span> Villain</span>
             </li>
-            <li><Cell val={4} cellClass={'cell walkable'}/>
+            <li><Cell val={4} visible={true} />
               <span> Health</span>
             </li>
-            <li><Cell val={5} cellClass={'cell walkable'}/>
+            <li><Cell val={5} visible={true} />
               <span> Weapon</span>
             </li>
           </ul>
@@ -306,20 +365,38 @@ class Menu extends React.Component {
 
 class Map extends React.Component {
   render() {
-    let { grid } = this.props;
-    const gameMap = grid.map((rowsArr, row) => {
+    const { grid, lightsOn } = this.props;
+    const { row, col } = this.props.player.position;
+    const gameMap = grid.map((rowsArr, rowIdx) => {
       return (
-        rowsArr.map((cell, col) => {
-          const cellId = `${row}|${col}`;
-					const val = grid[row][col];
+        rowsArr.map((cell, colIdx) => {
+          const cellId = `${rowIdx}|${colIdx}`;
+					const val = grid[rowIdx][colIdx];
+          let visible;
+          if(lightsOn) {
+            visible = true;
+          } else {
+            const rowDiff = Math.abs(row - rowIdx);
+            const colDiff = Math.abs(col - colIdx);
+            visible = (
+              (rowDiff === 3 && colDiff === 0) ||
+              (rowDiff === 2 && colDiff === 0) ||
+              (rowDiff === 2 && colDiff === 1) ||
+              (rowDiff === 1 && colDiff === 0) ||
+              (rowDiff === 1 && colDiff === 1) ||
+              (rowDiff === 1 && colDiff === 2) ||
+              (rowDiff === 0 && colDiff === 0) ||
+              (rowDiff === 0 && colDiff === 1) ||
+              (rowDiff === 0 && colDiff === 2) ||
+              (rowDiff === 0 && colDiff === 3)
+            );
+          }
           return (
             <Cell
-              key = {cellId}
-              id = {cellId}
-              cellClass = {(val === 0) ? 'cell unwalkable' : 'cell walkable'}
-     					val = { val }
-              row = {row}
-              col = {col}
+              key = { cellId }
+              id = { cellId }
+              val = { val }
+              visible = { visible }
             />
           );
         })
@@ -335,18 +412,22 @@ class Map extends React.Component {
 
 class Cell extends React.Component {
   render() {
+    const { val, visible, id } = this.props;
+    const cellClass = 'cell ' + (visible ? (val === 0 ? 'unwalkable' : 'walkable') : 'dark')
     return (
-      <div className = {this.props.cellClass}>
-        {this.props.val === 2 && <div className = "player"></div>}
-				{this.props.val === 3 && <div className = "villain"></div>}
-				{this.props.val === 4 && <div className = "health"></div>}
-				{this.props.val === 5 && <div className = "weapon"></div>}
+      <div className = { cellClass } id = { id }>
+        {visible && val === 2 && <div className = "player"></div>}
+        {visible && val === 3 && <div className = "villain"></div>}
+        {visible && val === 4 && <div className = "health"></div>}
+        {visible && val === 5 && <div className = "weapon"></div>}
       </div>
     );
   }
 }
 
 ReactDOM.render(<App />, document.getElementById('root'));
+
+/*-------------------- Helper Functions below --------------------------*/
 
 function createArray(num, dimensions) {
   let array = [];
@@ -359,7 +440,8 @@ function createArray(num, dimensions) {
   return array;
 }
 
-function createMap(dimensions = 40, maxTunnels = 210, maxLength = 12) { //Random Walker Algorithm
+function createMap(dimensions = 40, maxTunnels = 210, maxLength = 12) {
+  //Random Walker Algorithm
   let map = createArray(0, dimensions),
     currentRow = Math.floor(Math.random() * dimensions),
     currentColumn = Math.floor(Math.random() * dimensions),
@@ -435,9 +517,10 @@ function initialState() {
       type : 'inform',
     },
     villains : [],
-    theBoss : 1000,
-    gameStatus : 3,
-    lights : 'off',
+    theBoss : {
+      isHere : false,
+    },
+    lightsOn : false,
   };
   state.grid[position.row][position.col] = 2;
   return state;
@@ -499,3 +582,5 @@ function dealDamage(level, weapon) {
   const damage = damages[Math.ceil(Math.random() * (level / 2))];
   return (damage + ((weapon * 10 * damage) / 100));
 }
+
+/*------------------------- Program End --------------------------*/
