@@ -10,40 +10,49 @@ li {
   padding: 1px;
 }
 
-.title {
-  font-family: "Love Ya Like A Sister", cursive;
-  font-size: 38px;
+span {
+  margin-left: 5px;
 }
 
 .roguelike {
   display: grid;
-  grid-template-columns: auto auto;
+  grid-template-columns: auto auto auto;
   font-family: "Montserrat", cursive;
 }
 
 .menu {
-  width: 350px;
+  width: 320px;
   font-size: 20px;
   padding-top: 20px;
   padding-left: 5px;
   color: white;
-  background: black;
+  background: #2D2C2A;
   margin-top: 4%;
   margin-bottom: 2%;
+  border-radius: 15px;
+  box-shadow: 2px 2px 10px black;
 }
 
-.stats > h3 {
-  text-align: center;
+.story {
+  font-size: 15px;
+  text-align: justify;
+  margin-right: 5px;
 }
 
-.map-items > h3 {
+.title {
+  font-family: "Love Ya Like A Sister", cursive;
+  font-size: 38px;
+  padding-left: 15px;
+}
+
+.text-center {
   text-align: center;
 }
 
 .message {
   width : 300px;
   height : 72px;
-  margin : 10px auto;
+  margin : 10px 0px;
   padding : 5px;
   border: 1px solid lightgray;
 }
@@ -144,5 +153,5 @@ li {
 }
 
 .dark {
-  background: black;
+  background: #EBEDEF;
 }

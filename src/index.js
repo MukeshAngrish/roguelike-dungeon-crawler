@@ -259,9 +259,9 @@ class App extends React.Component {
         this.reset();
         break;
 
-      // case 84: // T
-      //   //toggleLights
-      //   break;
+      case 84: // T
+        this.toggleLights();
+        break;
       default:
         console.log('default');
     }
@@ -329,7 +329,7 @@ class Menu extends React.Component {
           <div>A Roguelike</div>
         </div>
         <div className = 'stats'>
-          <h3>Player Stats</h3>
+          <h3 className = 'text-center'>Player Stats</h3>
           <ul>
             <li><strong>Level: </strong>{ player.level }</li>
             <li><strong>Health: </strong>{ player.health }</li>
@@ -341,16 +341,16 @@ class Menu extends React.Component {
           <div className = {message.type}>{message.text}</div>
         </div>
         <div className = 'map-items'>
-          <h3>Map Items</h3>
+          <h3 className = 'text-center'>Map Items</h3>
           <ul>
             <li><Cell val={0} visible={true} />
-              <span> Unwalkable Area</span>
+              <span> Unaccessible Area</span>
             </li>
             <li><Cell val={1} visible={true} />
-              <span> Walkable Area</span>
+              <span> Accessible Area</span>
             </li>
             <li><Cell val={2} visible={true} />
-              <span> Player</span>
+              <span> You (The President)</span>
             </li>
             <li><Cell val={3} visible={true} />
               <span> Villain</span>
@@ -421,7 +421,7 @@ class Cell extends React.Component {
     const cellClass = 'cell ' + (visible ? (val === 0 ? 'unwalkable' : 'walkable') : 'dark')
     return (
       <div className = { cellClass } id = { id }>
-        {visible && val === 2 && <div className = "player"></div>}
+        {val === 2 && <div className = "player"></div>}
         {visible && val === 3 && <div className = "villain"></div>}
         {visible && val === 4 && <div className = "health"></div>}
         {visible && val === 5 && <div className = "weapon"></div>}
@@ -432,7 +432,42 @@ class Cell extends React.Component {
 
 class Instructions extends React.Component {
   render() {
-    <div>Hey</div>
+    return (
+      <div className = 'menu'>
+        <div className = 'title'>
+          Introduction
+        </div>
+        <div className = 'story'>
+          <p>
+            It is a truth universally acknowledged that every now and again
+            a situation arises that defies explanation. And so it was with your
+            ascension to the Presidency of the United States.
+          </p>
+          <p>
+            While preparing for a press conference, you are warned of an
+            impending alien invasion. Just as you are informed, the invasion
+            begins, spearheaded by the alien warlord The Boss, who captures
+            the entire cabinet, including you.
+          </p>
+          <p>
+            You realise that you are trapped inside a randomised simulation.
+            You can collect weapons and health to gain XP. Kill all the villains
+            to weakens the simulation and gain mega XP. Without any villains
+            left The Boss will be forced to face you.
+          </p>
+          <p>
+            It's time to save the world!
+          </p>
+        </div>
+        <div className = 'instructions'>
+          <h3 className = 'text-center'>Instructions</h3>
+          <ol>
+            <li>Press R to restart the game</li>
+            <li>Press T to toggle visible area in the map</li>
+          </ol>
+        </div>
+      </div>
+    );
   }
 }
 
