@@ -8,7 +8,6 @@ class App extends React.Component {
     this.state = getState();
     // binding methods
     this.reset = this.reset.bind(this);
-    this.toggleLights = this.toggleLights.bind(this);
     this.playerMove = this.playerMove.bind(this);
     this.freeMove = this.freeMove.bind(this);
     this.fightVillain = this.fightVillain.bind(this);
@@ -20,12 +19,6 @@ class App extends React.Component {
   reset() {
     const state = getState();
     this.setState(state);
-  }
-
-  toggleLights() {
-    let { lights } = this.state;
-    lights = lights === 'off' ? 'on' : 'off';
-    this.setState({ lights });
   }
 
   playerMove(direction) {
@@ -48,6 +41,10 @@ class App extends React.Component {
     switch (gridVal) {
       case 1: // moving in the lightblue(walkable) area
         this.freeMove(player, grid, position);
+        break;
+
+      case 2: // fight the boss
+        this.fightBoss(player, grid, position);
         break;
 
       case 3: // fight the villain in turns to move ahead
@@ -86,8 +83,53 @@ class App extends React.Component {
     });
   }
 
+  fightBoss(player, grid, position) {
+    let { theBoss } = this.state;
+    theBoss.health -= dealDamage(player.level, player.weapon);
+    if(theBoss.health > 0) {
+      player.health -= dealDamage(theBoss.level, theBoss.weapon);
+      if(player.health > 0) {
+        this.setState({
+          player,
+          theBoss,
+          message : {
+            text : `You are fighting The Boss.
+                    His remaining health is ${theBoss.health}`,
+            type : 'hit flash',
+          }
+        })
+      } else {
+        player.health = 0;
+        this.setState({
+          player,
+          message : {
+            text : 'You were killed by The Boss. Game Over!',
+            type : 'alert',
+          },
+        })
+      }
+    } else {
+      grid[player.position.row][player.position.col] = 1;
+      grid[position.row][position.col] = 2;
+      player.xp += (theBoss.level * 1000);
+      player.position = position;
+      theBoss = {
+        isHere : true,
+      }
+      this.setState({
+        player,
+        grid,
+        message : {
+          text : 'You killed The Boss. Time to celebrate',
+          type : 'good',
+        },
+        theBoss,
+      });
+    }
+  }
+
   fightVillain(player, grid, position) {
-    let { villains } = this.state;
+    let { villains, theBoss } = this.state;
     let index;
     for(let i = 0; i < villains.length; i++) {
       if(villains[i].position.row === position.row &&
@@ -116,7 +158,6 @@ class App extends React.Component {
             text : 'You were killed. Game Over!',
             type : 'alert',
           },
-          gameStatus : 0,
         })
       }
     } else {
@@ -125,6 +166,15 @@ class App extends React.Component {
       player.xp += (villains[index].level * 100);
       player.position = position;
       villains.splice(index, 1);
+      if(!villains.length) {
+        theBoss = {
+          isHere : true,
+          health : 2000,
+          weapon : 6,
+          level : 25,
+          position : randomPosition(grid),
+        }
+      }
       this.setState({
         player,
         villains,
@@ -132,7 +182,8 @@ class App extends React.Component {
         message : {
           text : 'You killed a bad guy. Time to kill some more',
           type : 'good',
-        }
+        },
+        theBoss,
       });
     }
   }
@@ -257,7 +308,7 @@ class Menu extends React.Component {
                     2000, 2300, 2600, 2900, 3200,
                     3600, 4000, 4400, 4800, 5200];
     const weapons = ['Weapon1', 'Weapon2', 'Weapon3', 'Weapon4', 'Weapon5', 'Weapon6'];
-    let { player, grid, lights, message } = this.props;
+    let { player, message } = this.props;
     return (
       <div className = 'menu'>
         <div className = 'title'>
@@ -274,7 +325,7 @@ class Menu extends React.Component {
           </ul>
         </div>
         <div className = 'message'>
-          <div className = {this.props.message.type}>{this.props.message.text}</div>
+          <div className = {message.type}>{message.text}</div>
         </div>
         <div className = 'map-items'>
           <h3>Map Items</h3>
@@ -306,7 +357,7 @@ class Menu extends React.Component {
 
 class Map extends React.Component {
   render() {
-    let { grid } = this.props;
+    let { grid, player } = this.props;
     const gameMap = grid.map((rowsArr, row) => {
       return (
         rowsArr.map((cell, col) => {
@@ -314,12 +365,10 @@ class Map extends React.Component {
 					const val = grid[row][col];
           return (
             <Cell
-              key = {cellId}
-              id = {cellId}
-              cellClass = {(val === 0) ? 'cell unwalkable' : 'cell walkable'}
-     					val = { val }
-              row = {row}
-              col = {col}
+              key = { cellId }
+              id = { cellId }
+              cellClass = { (val === 0) ? 'cell unwalkable' : 'cell walkable' }
+              val = { val }
             />
           );
         })
@@ -336,11 +385,21 @@ class Map extends React.Component {
 class Cell extends React.Component {
   render() {
     return (
-      <div className = {this.props.cellClass}>
+      <div className = { this.props.cellClass } id = { this.props.id }>
         {this.props.val === 2 && <div className = "player"></div>}
 				{this.props.val === 3 && <div className = "villain"></div>}
 				{this.props.val === 4 && <div className = "health"></div>}
 				{this.props.val === 5 && <div className = "weapon"></div>}
+      </div>
+    );
+  }
+}
+
+class BlackCell extends React.Component {
+  render() {
+    return (
+      <div className = {this.props.cellClass}>
+        {this.props.val === 2 && <div className = "player"></div>}
       </div>
     );
   }
@@ -435,9 +494,9 @@ function initialState() {
       type : 'inform',
     },
     villains : [],
-    theBoss : 1000,
-    gameStatus : 3,
-    lights : 'off',
+    theBoss : {
+      isHere : false,
+    },
   };
   state.grid[position.row][position.col] = 2;
   return state;
@@ -498,4 +557,9 @@ function dealDamage(level, weapon) {
   const damages = [20, 30, 50, 80, 120, 170, 230, 300, 380, 470, 570, 680];
   const damage = damages[Math.ceil(Math.random() * (level / 2))];
   return (damage + ((weapon * 10 * damage) / 100));
+}
+
+function checkNearby(row, col, position) {
+  console.log('checkNearby');
+  return true;
 }

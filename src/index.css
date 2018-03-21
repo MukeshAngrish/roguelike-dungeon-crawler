@@ -28,8 +28,8 @@ li {
   padding-left: 5px;
   color: white;
   background: black;
-  margin-top: 6%;
-  margin-bottom: 6%;
+  margin-top: 4%;
+  margin-bottom: 2%;
 }
 
 .stats > h3 {
@@ -42,8 +42,8 @@ li {
 
 .message {
   width : 300px;
-  height : 38px;
-  margin : auto;
+  height : 72px;
+  margin : 10px auto;
   padding : 5px;
   border: 1px solid lightgray;
 }
@@ -51,9 +51,9 @@ li {
 .hit {
   background-color: #B22222;
   color : lightgray;
-  height : 38px;
   animation-duration : 1s;
   animation-fill-mode: both;
+  height: inherit;
 }
 
 @@keyframes flash {
@@ -72,27 +72,19 @@ li {
 .alert {
   color : lightgray;
   background-color : lighten(#B22222, 25%);
-  height : 38px;
+  height: inherit;
 }
 
 .inform {
   color : black;
   background-color : lightgray;
-  height : 38px;
+  height: inherit;
 }
 
 .good {
   color : black;
   background-color: springgreen;
-  height : 38px;
-}
-
-.story {
-  background: white;
-  color: brown;
-  width : 300px;
-  margin : auto;
-  padding : 5px;
+  height: inherit;
 }
 
 .map {
@@ -148,5 +140,9 @@ li {
 }
 
 .unwalkable {
+  background: gray;
+}
+
+.dark {
   background: gray;
 }
