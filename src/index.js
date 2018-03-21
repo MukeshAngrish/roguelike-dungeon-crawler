@@ -2,6 +2,8 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
 
+/*------------------------- Components --------------------------*/
+
 class App extends React.Component {
   constructor() {
     super();
@@ -303,6 +305,9 @@ class App extends React.Component {
           player = { player }
           lightsOn = { lightsOn }
         />
+        <Instructions
+          toggleLights = { this.toggleLights }
+        />
       </div>
     );
   }
@@ -422,6 +427,12 @@ class Cell extends React.Component {
         {visible && val === 5 && <div className = "weapon"></div>}
       </div>
     );
+  }
+}
+
+class Instructions extends React.Component {
+  render() {
+    <div>Hey</div>
   }
 }
 
