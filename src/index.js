@@ -125,6 +125,7 @@ class App extends React.Component {
             text : 'You were killed by The Boss. Game Over!',
             type : 'alert',
           },
+          gameOver : true,
         })
       }
     } else {
@@ -132,9 +133,6 @@ class App extends React.Component {
       grid[position.row][position.col] = 2;
       player.xp += (theBoss.level * 1000);
       player.position = position;
-      theBoss = {
-        isHere : true,
-      }
       this.setState({
         player,
         grid,
@@ -143,6 +141,7 @@ class App extends React.Component {
           type : 'good',
         },
         theBoss,
+        gameOver : true,
       });
     }
   }
@@ -178,6 +177,7 @@ class App extends React.Component {
             text : 'You were killed. Game Over!',
             type : 'alert',
           },
+          gameOver : true,
         })
       }
     } else {
@@ -186,31 +186,27 @@ class App extends React.Component {
       player.xp += (villains[index].level * 100);
       player.position = position;
       villains.splice(index, 1);
+      let message;
+      if(!villains.length) {
+        theBoss.isHere = true
+        grid[theBoss.position.row][theBoss.position.col] = 2;
+        message = {
+          text : 'The Boss is here. Time to save the world',
+          type : 'good',
+        };
+      } else {
+        message = {
+          text : 'You killed a bad guy. Time to kill some more.',
+          type : 'good',
+        }
+      }
       this.setState({
         player,
         villains,
         grid,
-        message : {
-          text : 'You killed a bad guy. Time to kill some more.',
-          type : 'good',
-        },
+        message,
         theBoss,
-        lightsOn: true,
       });
-      if(!villains.length) {
-        theBoss = {
-          isHere : true,
-          health : 6000,
-          weapon : 6,
-          level : 25,
-          position : randomPosition(grid),
-          message : {
-            text : 'The Boss has been forced to face you. Kill him and save the world!',
-            type : 'good',
-          },
-        }
-        grid[theBoss.position.row][theBoss.position.col] = 2;
-      }
     }
   }
 
@@ -308,7 +304,7 @@ class App extends React.Component {
   }
 
   render() {
-    const { player, grid, lights, message, lightsOn } = this.state;
+    const { player, grid, lights, message, lightsOn, gameOver } = this.state;
     return (
       <div className = "roguelike">
         <Menu
@@ -321,10 +317,102 @@ class App extends React.Component {
           grid = { grid }
           player = { player }
           lightsOn = { lightsOn }
+          gameOver = { gameOver }
         />
         <Instructions
           toggleLights = { this.toggleLights }
         />
+      </div>
+    );
+  }
+}
+
+class Map extends React.Component {
+  render() {
+    const { grid, player, lightsOn, gameOver } = this.props;
+    if(gameOver) {
+      if(player.health <= 0) {
+        return (
+          <div className = 'lose'>
+            <div className = 'heading'>
+              You lost.
+            </div>
+            <div className = 'paragraph'>
+              You were beaten and sucked into the simulation. The Boss killed
+              all your cabinet and destroyed half of the world. To go back in
+              time and try again press <strong>R</strong>
+            </div>
+          </div>
+        );
+      } else {
+        return (
+          <div className = 'win'>
+            <div className = 'heading'>
+              You won.
+            </div>
+            <div className = 'paragraph'>
+              You saved the world! Impressed by the simulation, you have
+              declared it a national game. To continue being the most
+              awesome President press <strong>R</strong>
+            </div>
+          </div>
+        );
+      }
+    }
+    const { row, col } = this.props.player.position;
+    const gameMap = grid.map((rowsArr, rowIdx) => {
+      return (
+        rowsArr.map((cell, colIdx) => {
+          const cellId = `${rowIdx}|${colIdx}`;
+					const val = grid[rowIdx][colIdx];
+          let visible;
+          if(lightsOn) {
+            visible = true;
+          } else {
+            const rowDiff = Math.abs(row - rowIdx);
+            const colDiff = Math.abs(col - colIdx);
+            visible = (
+              (rowDiff === 3 && colDiff === 0) ||
+              (rowDiff === 2 && colDiff === 0) ||
+              (rowDiff === 2 && colDiff === 1) ||
+              (rowDiff === 1 && colDiff === 0) ||
+              (rowDiff === 1 && colDiff === 1) ||
+              (rowDiff === 1 && colDiff === 2) ||
+              (rowDiff === 0 && colDiff === 0) ||
+              (rowDiff === 0 && colDiff === 1) ||
+              (rowDiff === 0 && colDiff === 2) ||
+              (rowDiff === 0 && colDiff === 3)
+            );
+          }
+          return (
+            <Cell
+              key = { cellId }
+              id = { cellId }
+              val = { val }
+              visible = { visible }
+            />
+          );
+        })
+      )
+    })
+    return (
+      <div className = "map">
+        {gameMap}
+      </div>
+    );
+  }
+}
+
+class Cell extends React.Component {
+  render() {
+    const { val, visible, id } = this.props;
+    const cellClass = 'cell ' + (visible ? (val === 0 ? 'unwalkable' : 'walkable') : 'dark')
+    return (
+      <div className = { cellClass } id = { id }>
+        {val === 2 && <div className = "player"></div>}
+        {visible && val === 3 && <div className = "villain"></div>}
+        {visible && val === 4 && <div className = "health"></div>}
+        {visible && val === 5 && <div className = "weapon"></div>}
       </div>
     );
   }
@@ -380,68 +468,6 @@ class Menu extends React.Component {
             </li>
           </ul>
         </div>
-      </div>
-    );
-  }
-}
-
-class Map extends React.Component {
-  render() {
-    const { grid, lightsOn } = this.props;
-    const { row, col } = this.props.player.position;
-    const gameMap = grid.map((rowsArr, rowIdx) => {
-      return (
-        rowsArr.map((cell, colIdx) => {
-          const cellId = `${rowIdx}|${colIdx}`;
-					const val = grid[rowIdx][colIdx];
-          let visible;
-          if(lightsOn) {
-            visible = true;
-          } else {
-            const rowDiff = Math.abs(row - rowIdx);
-            const colDiff = Math.abs(col - colIdx);
-            visible = (
-              (rowDiff === 3 && colDiff === 0) ||
-              (rowDiff === 2 && colDiff === 0) ||
-              (rowDiff === 2 && colDiff === 1) ||
-              (rowDiff === 1 && colDiff === 0) ||
-              (rowDiff === 1 && colDiff === 1) ||
-              (rowDiff === 1 && colDiff === 2) ||
-              (rowDiff === 0 && colDiff === 0) ||
-              (rowDiff === 0 && colDiff === 1) ||
-              (rowDiff === 0 && colDiff === 2) ||
-              (rowDiff === 0 && colDiff === 3)
-            );
-          }
-          return (
-            <Cell
-              key = { cellId }
-              id = { cellId }
-              val = { val }
-              visible = { visible }
-            />
-          );
-        })
-      )
-    })
-    return (
-      <div className = "map">
-        {gameMap}
-      </div>
-    );
-  }
-}
-
-class Cell extends React.Component {
-  render() {
-    const { val, visible, id } = this.props;
-    const cellClass = 'cell ' + (visible ? (val === 0 ? 'unwalkable' : 'walkable') : 'dark')
-    return (
-      <div className = { cellClass } id = { id }>
-        {val === 2 && <div className = "player"></div>}
-        {visible && val === 3 && <div className = "villain"></div>}
-        {visible && val === 4 && <div className = "health"></div>}
-        {visible && val === 5 && <div className = "weapon"></div>}
       </div>
     );
   }
@@ -582,8 +608,13 @@ function initialState() {
     villains : [],
     theBoss : {
       isHere : false,
+      health : 1000,
+      weapon : 8,
+      level : 25,
+      position : randomPosition(grid),
     },
     lightsOn : false,
+    gameOver : false,
   };
   state.grid[position.row][position.col] = 2;
   return state;
@@ -613,7 +644,7 @@ function placeVillains(state) {
 function placeHealth(state) {
   let healthCount = 0,
     position;
-  while(healthCount < 30) {
+  while(healthCount < 40) {
     position = randomPosition(state.grid);
     state.grid[position.row][position.col] = 4;
     healthCount++;
